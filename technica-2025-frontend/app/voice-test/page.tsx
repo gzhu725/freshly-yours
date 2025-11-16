@@ -9,11 +9,40 @@ import { ELEVENLABS_API_KEY, GEMINI_KEY } from "@/keys";
 
 export default function VoiceTest() {
   useEffect(() => {
-    const prompt =
-      "Given the following text explaining what foods a user wants to record in an app, return a structured object in the json format specified. Output format: a list of each food mentioned. Object format: {name: String, quantity: 'small', 'medium', 'large', date: string in the format YEAR-DATE-MONTH}. Quantity should reflect roughly how much of that food they specified (use small if not specified). Date should specify when they acquired the food (use today's date if not specified). Text:  ";
+    const loggedIn = true;
+    const myprompt =
+      "Given the following text explaining what foods a user wants to record in an app, return a structured object in the json format specified. Output format: a list of each food mentioned. Object format: {name: String, quantity: 'small', 'medium', 'large', date: string in the format YEAR-DATE-MONTH}. Quantity should reflect roughly how much of that food they specified (use small if not specified). Date should specify when they acquired the food (use today's date, November 15 2025, as reference and if not specified). Text:  ";
     console.log(process.env);
 
-    async function addToDB(jsonStr: string) {}
+    async function addToDB(input_json: string) {
+      if (loggedIn) {
+        try {
+          const response = await fetch("http://127.0.0.1:8000/add-to-db", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: input_json, //JSON.stringify({ snip: snip.trim(), artist, song, username }),
+          });
+
+          if (response.ok) {
+            const res = await response.text();
+
+            if (res === "True") {
+              console.log("Saved to db!");
+              alert("Saved!");
+            } else {
+              console.log("Error saving");
+              alert("There was an error, please try again");
+            }
+          } else {
+            // Handle errors
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        alert("Please log in to save!");
+      }
+    }
 
     async function getResponse(voiceTest: string) {
       const ai = new GoogleGenAI({
@@ -21,7 +50,7 @@ export default function VoiceTest() {
       });
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: prompt + voiceTest,
+        contents: myprompt + voiceTest,
       });
       console.log(response.text);
     }
