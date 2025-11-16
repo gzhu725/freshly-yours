@@ -217,5 +217,34 @@ def add_food():
         "expiration_date": expiration_date.strftime("%Y-%m-%d")
     })
 
+# Get all food for a given user
+@app.route("/get-food/<user_id>", methods=["GET"])
+def get_food_by_user(user_id):
+    # Validate UUID
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        return jsonify({"error": "Invalid user_id format"}), 400
+
+    # Lookup user
+    user = User.objects(id=user_uuid).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Get all food items for this user
+    food_items = Food.objects(user=user)
+
+    # Build response
+    result = []
+    for food in food_items:
+        result.append({
+            "food_id": str(food.id),
+            "name": food.name,
+            "quantity": food.quantity,
+            "expiration_date": food.expiration_date.isoformat() if food.expiration_date else None
+        })
+
+    return jsonify({"user": user.username, "food_items": result})
+
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

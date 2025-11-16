@@ -67,6 +67,45 @@ const [showReceiptDialog, setShowReceiptDialog] = useState(false);
   preview: string | null;
 } | null>(null);
 
+const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+const userId = "b63930be-fdf4-4f43-811f-2427e4157b3b";
+
+
+useEffect(() => {
+    const fetchUserFood = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/get-food/${userId}`);
+        if (!response.ok) {
+          console.error("Error fetching food:", await response.text());
+          return;
+        }
+        const data = await response.json();
+
+        // Map backend food format to FoodItem[]
+        const items: FoodItem[] = data.food_items.map((f: any) => {
+          const expiryDate = new Date(f.expiration_date);
+          const today = new Date();
+          const diffTime = Math.max(expiryDate.getTime() - today.getTime(), 0);
+          const daysUntilExpiry = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+          return {
+            id: f.food_id,
+            name: f.name,
+            category: "Unknown", // You can add category if your backend provides it
+            quantity: parseInt(f.quantity) || 1,
+            expiryDate: expiryDate.toDateString(),
+            daysUntilExpiry,
+          };
+        });
+
+        setFoodItems(items);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    };
+
+    fetchUserFood();
+  }, []);
 
 const handleReceiptUpload = () => {
   const input = document.createElement("input");
@@ -127,10 +166,39 @@ const handleFileSelect = () => {
         .catch(console.error);
       
       setAlertMessage("Uploaded successfully!");  
+
+      fetch("http://127.0.0.1:8000/add-food", {})
     }
   };
   input.click();
 };
+
+const addDummyFood = async () => {
+  const mockData = {
+    _id: "b63930be-fdf4-4f43-811f-2427e4157b3b", // your test user ID
+    name: "Test Kpop Demon Hunter",
+    quantity: "medium",
+    shelf_life: 7
+  };
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/add-food", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(mockData),
+    });
+
+    const resData = await response.json();
+    console.log("Add food response:", resData);
+    alert("Dummy food added! Check console for response.");
+  } catch (err) {
+    console.error("Error adding dummy food:", err);
+    alert("Failed to add dummy food");
+  }
+};
+
 
 const handleReupload = () => {
   setUploadedFile(null);
@@ -158,7 +226,6 @@ const handleReupload = () => {
         try {
           const headers = {
             "Content-Type": "application/json",
-            Origin: "http://localhost:3000",
           };
 
           const response = await fetch("http://127.0.0.1:8000/add-food", {
@@ -172,13 +239,7 @@ const handleReupload = () => {
           if (response.ok) {
             const res = await response.text();
 
-            if (res === "True") {
-              console.log("Saved to db!");
-              alert("Saved!");
-            } else {
-              console.log("Error saving");
-              alert("There was an error, please try again");
-            }
+            
           } else {
             // Handle errors
           }
@@ -373,56 +434,56 @@ const handleReupload = () => {
     recordTest();
   }, []);
 
-  const foodItems: FoodItem[] = [
-    {
-      id: "1",
-      name: "Organic Milk",
-      category: "Dairy",
-      quantity: 1,
-      expiryDate: "Nov 18, 2025",
-      daysUntilExpiry: 3,
-    },
-    {
-      id: "2",
-      name: "Fresh Strawberries",
-      category: "Fruits",
-      quantity: 1,
-      expiryDate: "Nov 16, 2025",
-      daysUntilExpiry: 1,
-    },
-    {
-      id: "3",
-      name: "Cheddar Cheese",
-      category: "Dairy",
-      quantity: 1,
-      expiryDate: "Nov 25, 2025",
-      daysUntilExpiry: 10,
-    },
-    {
-      id: "4",
-      name: "Baby Spinach",
-      category: "Vegetables",
-      quantity: 1,
-      expiryDate: "Nov 17, 2025",
-      daysUntilExpiry: 2,
-    },
-    {
-      id: "5",
-      name: "Greek Yogurt",
-      category: "Dairy",
-      quantity: 4,
-      expiryDate: "Nov 22, 2025",
-      daysUntilExpiry: 7,
-    },
-    {
-      id: "6",
-      name: "Bell Peppers",
-      category: "Vegetables",
-      quantity: 3,
-      expiryDate: "Nov 20, 2025",
-      daysUntilExpiry: 5,
-    },
-  ];
+  // const foodItems: FoodItem[] = [
+  //   {
+  //     id: "1",
+  //     name: "Organic Milk",
+  //     category: "Dairy",
+  //     quantity: 1,
+  //     expiryDate: "Nov 18, 2025",
+  //     daysUntilExpiry: 3,
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Fresh Strawberries",
+  //     category: "Fruits",
+  //     quantity: 1,
+  //     expiryDate: "Nov 16, 2025",
+  //     daysUntilExpiry: 1,
+  //   },
+  //   {
+  //     id: "3",
+  //     name: "Cheddar Cheese",
+  //     category: "Dairy",
+  //     quantity: 1,
+  //     expiryDate: "Nov 25, 2025",
+  //     daysUntilExpiry: 10,
+  //   },
+  //   {
+  //     id: "4",
+  //     name: "Baby Spinach",
+  //     category: "Vegetables",
+  //     quantity: 1,
+  //     expiryDate: "Nov 17, 2025",
+  //     daysUntilExpiry: 2,
+  //   },
+  //   {
+  //     id: "5",
+  //     name: "Greek Yogurt",
+  //     category: "Dairy",
+  //     quantity: 4,
+  //     expiryDate: "Nov 22, 2025",
+  //     daysUntilExpiry: 7,
+  //   },
+  //   {
+  //     id: "6",
+  //     name: "Bell Peppers",
+  //     category: "Vegetables",
+  //     quantity: 3,
+  //     expiryDate: "Nov 20, 2025",
+  //     daysUntilExpiry: 5,
+  //   },
+  // ];
 
   const recipes: Recipe[] = [
     {
@@ -537,6 +598,11 @@ const handleReupload = () => {
 
   return (
     <div className="space-y-4">
+      {/* dummy stats */}
+      {/* <Button onClick={addDummyFood} className="w-full bg-[var(--eco-green)] text-white rounded-xl h-12">
+      Add Dummy Food
+      </Button> */}
+
       {/* Header Stats */}
       <div className="grid grid-cols-3 gap-3">
         <div
