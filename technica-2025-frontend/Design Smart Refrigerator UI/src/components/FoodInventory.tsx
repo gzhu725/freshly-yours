@@ -28,6 +28,7 @@ import { GoogleGenAI } from "@google/genai";
 
 import { ELEVENLABS_API_KEY, GEMINI_KEY } from "../../keys";
 import { object } from "@elevenlabs/elevenlabs-js/core/schemas";
+import { off } from "process";
 
 interface FoodItem {
   id: string;
@@ -70,10 +71,17 @@ export function FoodInventory() {
     async function addToDB(input_json: string) {
       if (loggedIn) {
         try {
+          const headers = {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3000",
+          };
+
           const response = await fetch("http://127.0.0.1:8000/add-food", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: input_json, //JSON.stringify({ snip: snip.trim(), artist, song, username }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(input_json), //JSON.stringify({ snip: snip.trim(), artist, song, username }),
           });
 
           if (response.ok) {
@@ -103,7 +111,7 @@ export function FoodInventory() {
       });
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
-        contents: myprompt + voiceTest, //"I bought 2 apples and a bottle of milk yesterday",
+        contents: myprompt + "I bought 2 apples and a bottle of milk yesterday", //+voiceTest,
       });
       console.log(response.text);
 
@@ -117,8 +125,11 @@ export function FoodInventory() {
               obj
             )}`
           );
-          obj._id = "b63930be-fdf4-4f43-811f-2427e4157b3b";
-          await addToDB(obj);
+
+          for (let food of obj) {
+            food._id = "b63930be-fdf4-4f43-811f-2427e4157b3b";
+            await addToDB(food);
+          }
           setLoadingState("none");
         } catch (e) {
           console.log("Error parsing JSON:", e);
