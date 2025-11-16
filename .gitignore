@@ -3,7 +3,10 @@
 /backend/images
 
 # dependencies
+./node_modules
 /node_modules
+node_modules/
+/technica-2025-frontend/Design Smart Refrigerator UI/node_modules
 /.pnp
 .pnp.*
 .yarn/*
