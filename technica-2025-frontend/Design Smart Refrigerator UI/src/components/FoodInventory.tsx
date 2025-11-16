@@ -226,7 +226,6 @@ const handleReupload = () => {
         try {
           const headers = {
             "Content-Type": "application/json",
-            Origin: "http://localhost:3000",
           };
 
           const response = await fetch("http://127.0.0.1:8000/add-food", {
@@ -240,13 +239,7 @@ const handleReupload = () => {
           if (response.ok) {
             const res = await response.text();
 
-            if (res === "True") {
-              console.log("Saved to db!");
-              alert("Saved!");
-            } else {
-              console.log("Error saving");
-              alert("There was an error, please try again");
-            }
+            
           } else {
             // Handle errors
           }
