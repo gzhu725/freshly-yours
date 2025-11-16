@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 from datetime import date, timedelta
 import requests
+from expiration_helper import get_food_expiration  # Add this import
 
 load_dotenv()
 
@@ -72,10 +73,17 @@ def recognize_items(image_path) -> Items:
     )
 
     foods: Items = response.choices[0].message.parsed
-
+    
+    # Update expiration dates using FoodKeeper data
     for f in foods.items:
-        if f.expiration is None:
-            f.expiration = date.today() + timedelta(days=1)
+        expiration_info = get_food_expiration(f.name)
+        if expiration_info["expiration_date"]:
+            f.expiration = expiration_info["expiration_date"]
+            print(f"DEBUG: Set expiration for {f.name} to {f.expiration}")
+        else:
+            # Fallback to default if no FoodKeeper data found
+            f.expiration = date.today() + timedelta(days=1)  # Default to 1 day
+            print(f"DEBUG: Using default expiration for {f.name}")
 
     if not foods.items:
         foods.items.append(Food(
