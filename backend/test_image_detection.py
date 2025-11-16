@@ -169,7 +169,6 @@ def generate_zero_waste_recipe(image_path: str) -> str:
         fallback_recipe = (
             "No recipes found for your expiring items. "
             f"Try combining the following items in a simple dish: {ingredient_list}. "
-            "For example, make a salad, stir-fry, smoothie, or roasted veggies."
         )
         return fallback_recipe
 

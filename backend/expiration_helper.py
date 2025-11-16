@@ -57,6 +57,33 @@ def map_to_product(name_raw: str):
     print("DEBUG: No match found")
     return None
 
+# If no expiration...fallback?
+def fallback_expiration(name: str):
+    name = name.lower()
+
+    # Fresh produce
+    if any(x in name for x in ["apple", "banana", "lettuce", "spinach", "tomato", "berry"]):
+        return datetime.now() + timedelta(days=4)
+
+    # Bread & baked items
+    if "bread" in name or "bun" in name:
+        return datetime.now() + timedelta(days=6)
+
+    # Meat / Fish / Dairy
+    if any(x in name for x in ["chicken", "beef", "fish", "milk", "yogurt", "cheese"]):
+        return datetime.now() + timedelta(days=3)
+
+    # Dry goods (like spaghetti)
+    if any(x in name for x in ["pasta", "spaghetti", "rice", "lentils", "beans", "flour"]):
+        return datetime.now() + timedelta(days=180)
+
+    # Canned & shelf stable
+    if any(x in name for x in ["canned", "jar", "sauce"]):
+        return datetime.now() + timedelta(days=365)
+
+    # Unknown → short safety window
+    return datetime.now() + timedelta(days=3)
+
 # Get refrigeration info using keys
 def get_refrigeration_info(product_row):
     if not product_row:
