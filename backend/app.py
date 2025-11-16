@@ -5,6 +5,10 @@ import shutil
 from test_image_detection import recognize_items, generate_zero_waste_recipe
 from models import User, Food
 from datetime import datetime, timedelta
+import uuid 
+
+
+# CRUD TO DB!!
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
@@ -46,6 +50,7 @@ def zero_waste_recipe():
     return jsonify({"result": result})
 
 
+# adding a user
 @app.route("/add-to-db", methods=['POST'])
 def add_to_db():
     data = request.json
@@ -67,6 +72,44 @@ def add_to_db():
     return jsonify({"result": f"User {username} added successfully", "id": str(user.id)})
 
 
+@app.route("/add-food", methods=['POST'])
+def add_food():
+    data = request.json
+
+    user_id = data.get("_id")  # UUID string from client
+    name = data.get("name")
+    quantity = data.get("quantity")
+    shelf_life_days = data.get("shelf_life", 5)
+
+    if not user_id or not name or not quantity:
+        return jsonify({"result": "_id, name, and quantity are required"}), 400
+
+    # Convert string to UUID object
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError as e:
+        return jsonify({"result": f"Invalid _id format: {e}"}), 400
+
+    # Find user by UUID
+    user = User.objects(id=user_uuid).first()
+    if not user:
+        return jsonify({"result": f"User {user_id} not found"}), 404
+
+    # Create food
+    expiration_date = datetime.now() + timedelta(days=shelf_life_days)
+    food = Food(
+        user=user,
+        name=name,
+        quantity=quantity,
+        expiration_date=expiration_date
+    )
+    food.save()
+
+    return jsonify({
+        "result": f"Food {name} added for user {user.username}",
+        "food_id": str(food.id),
+        "expiration_date": expiration_date.strftime("%Y-%m-%d")
+    })
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

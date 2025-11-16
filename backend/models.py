@@ -31,7 +31,7 @@ connect(
 # User Model
 # -----------------------------
 class User(Document):
-    user_id = UUIDField(primary_key=True, default=uuid.uuid4)
+    id = UUIDField(primary_key=True, default=uuid.uuid4)
     username = StringField(required=True, unique=True)
     name = StringField(required=True)
     password = StringField(required=True)  # Use hashed passwords in production
