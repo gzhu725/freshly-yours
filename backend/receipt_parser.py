@@ -1,5 +1,3 @@
-# receipt_parser_advanced.py
-
 import pytesseract
 from PIL import Image
 import re
