@@ -51,6 +51,7 @@ export function FoodInventory() {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showVoiceDialog, setShowVoiceDialog] = useState(false);
   const [loadingState, setLoadingState] = useState("none");
+  const [voiceState, setVoiceState] = useState("none");
 
   useEffect(() => {
     const loggedIn = true;
@@ -69,7 +70,7 @@ export function FoodInventory() {
     async function addToDB(input_json: string) {
       if (loggedIn) {
         try {
-          const response = await fetch("http://127.0.0.1:8000/add-to-db", {
+          const response = await fetch("http://127.0.0.1:8000/add-food", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: input_json, //JSON.stringify({ snip: snip.trim(), artist, song, username }),
@@ -116,6 +117,8 @@ export function FoodInventory() {
               obj
             )}`
           );
+          obj._id = "b63930be-fdf4-4f43-811f-2427e4157b3b";
+          await addToDB(obj);
           setLoadingState("none");
         } catch (e) {
           console.log("Error parsing JSON:", e);
@@ -354,6 +357,15 @@ export function FoodInventory() {
     setShowVoiceDialog(true);
   };
 
+  const inputSelectFunc = (optionId: string) => {
+    if (optionId === "voice") {
+      setVoiceState("block");
+      setShowAddDialog(false);
+    } else if (optionId === "camera") {
+      alert("Camera input coming soon!");
+    }
+  };
+
   const getExpiryStatus = (days: number) => {
     if (days <= 1)
       return {
@@ -534,34 +546,36 @@ export function FoodInventory() {
         </DialogContent>
       </Dialog>
 
-      <p>Voice Input 🗣️</p>
-      <section className="main-controls">
-        <div id="buttons">
-          <button
-            className="record w-full bg-[var(--eco-green)] hover:bg-[var(--eco-dark)] text-white rounded-xl h-12"
-            style={{
-              border: "3px solid white",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            }}
-          >
-            Record
-          </button>
-          <button
-            className="stop w-full bg-[var(--eco-green)] hover:bg-[var(--eco-dark)] text-white rounded-xl h-12"
-            style={{
-              border: "3px solid white",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            }}
-          >
-            Stop
-          </button>
-        </div>
-      </section>
+      <div style={{ display: voiceState }}>
+        <p>Voice Input 🗣️</p>
+        <section className="main-controls">
+          <div id="buttons">
+            <button
+              className="record w-full bg-[var(--eco-green)] hover:bg-[var(--eco-dark)] text-white rounded-xl h-12"
+              style={{
+                border: "3px solid white",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            >
+              Record
+            </button>
+            <button
+              className="stop w-full bg-[var(--eco-green)] hover:bg-[var(--eco-dark)] text-white rounded-xl h-12"
+              style={{
+                border: "3px solid white",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              }}
+            >
+              Stop
+            </button>
+          </div>
+        </section>
 
-      <section className="sound-clips" style={{ display: "none" }}></section>
-      <p id="loading-text" style={{ display: loadingState }}>
-        Processing...
-      </p>
+        <section className="sound-clips" style={{ display: "none" }}></section>
+        <p id="loading-text" style={{ display: loadingState }}>
+          Processing...
+        </p>
+      </div>
 
       {/* Add Item Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -587,9 +601,10 @@ export function FoodInventory() {
           <div className="grid grid-cols-2 gap-3 pt-4">
             {addOptions.map((option) => {
               const Icon = option.icon;
+
               return (
                 <button
-                  onClick={() => openVoiceDialog()}
+                  onClick={() => inputSelectFunc(option.id)}
                   key={option.id}
                   className="p-5 bg-white rounded-2xl border-3 border-white shadow-md hover:scale-105 transition-all"
                   style={{
